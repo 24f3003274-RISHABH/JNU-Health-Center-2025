@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JNU Health Center - Book New Appointment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base styles */
+        body { font-family: 'Inter', sans-serif; background-color: #f7fafc; }
+        .input-box {
+            @apply w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150;
+        }
+        .form-label { @apply block text-gray-700 font-medium mb-1; }
+        
+        /* Themed buttons */
+        .btn-primary { @apply bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-orange-700 transition; }
+        /* Style for disabled button */
+        .btn-primary:disabled {
+            @apply bg-gray-400 cursor-not-allowed hover:bg-gray-400;
+        }
+
+        .btn-back { @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-semibold shadow; }
+        
+        /* Styling for select dropdown to look uniform */
+        select.input-box {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 0.8em;
+        }
+        /* Header specific styles to mimic the image */
+        .header-bg {
+            background-image: linear-gradient(to right, #4CAF50, #2196F3);
+            background-size: cover;
+            background-position: center;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+        }
+        .header-logo {
+            height: 80px;
+            width: 80px;
+            margin-right: 20px;
+            border-radius: 50%; 
+            object-fit: cover;
+        }
+        .header-text h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+        }
+        .header-text p {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-100 flex flex-col">
+    <header class="header-bg shadow-md">
+        <div class="container mx-auto flex items-center">
+            <img src="/static/uploads/JNUlogo.jpeg" alt="JNU Logo" class="header-logo" />
+            <div class="header-text">
+                <h1>JNU Health Centre</h1>
+                <p>Online Specialist Consultations & Part Time Psychology Services</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="fixed top-4 right-4 z-50 space-y-2 w-80">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 rounded-lg shadow-md text-white font-semibold 
+                        {% if category == 'danger' or category == 'error' %} bg-red-500 
+                        {% elif category == 'success' %} bg-green-500 
+                        {% else %} bg-blue-500 {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <header class="bg-white shadow-lg p-5 flex justify-between items-center">
+        <h1 class="text-3xl font-extrabold text-blue-800">Book New Appointment</h1>
+        <a href="{{ url_for('patient_dash') }}" 
+                      class="inline-block bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold 
+                              px-5 py-2 rounded-lg shadow-md
+                              transform transition duration-300 ease-in-out
+                              hover:from-orange-600 hover:to-red-700 hover:scale-105 hover:shadow-lg">
+                        ⬅️ Go Back to Dashboard
+                    </a>
+    </header>
+
+    <main class="flex-grow container mx-auto p-6">
+
+        <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-2xl border-t-4 border-orange-600">
+
+            <h2 class="text-2xl font-bold text-gray-800 border-b pb-3 mb-6">
+                Appointment Details
+            </h2>
+
+            <form action="{{ url_for('new_appointment') }}" method="POST" class="space-y-6">
+
+                <div>
+                    <label class="form-label">Patient Name</label>
+                    <input type="text" value="{{ user.name }}" class="input-box bg-gray-100 cursor-not-allowed" disabled>
+                    <input type="hidden" name="user_id" value="{{ user.user_id }}">
+                </div>
+                
+                <div>
+                    <label class="form-label">Select Department</label>
+                    <select name="department_id" id="departmentSelect" class="input-box" required>
+                        <option value="">-- Choose Department --</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept.dept_id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label">Select Doctor</label>
+                    <select name="doctor_id" id="doctorSelect" class="input-box" required>
+                        <option value="">-- Select Department First --</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Appointment Date</label>
+                        <input type="date" name="date" class="input-box" id="appointmentDate" required> 
+                    </div>
+
+                    <div>
+                        <label class="form-label">Time Slot</label>
+                        <select name="time" class="input-box" id="timeSlotSelect" required>
+                            <option value="">-- Select Time --</option>
+                            <option value="09:00 AM">09:00 AM - 01:00 PM</option>
+                            <option value="02:00 PM">02:00 PM - 06:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="availabilityStatus" class="p-3 rounded-lg text-sm font-medium hidden"></div>
+
+                <div class="pt-4">
+                    <button 
+                    class="btn-primary bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md 
+                          transform transition duration-300 ease-in-out 
+                          hover:bg-red-700 hover:scale-105 hover:shadow-lg">
+                        Book Appointment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center py-4 mt-8 text-sm">
+        &copy; 2025 JNU Health Center | Patient Portal
+    </footer>
+
+</body>
+
+<script>
+  
+    // --- 1. DOM Element Setup ---
+    const dateInput = document.getElementById('appointmentDate');
+    const departmentSelect = document.getElementById("departmentSelect");
+    const doctorSelect = document.getElementById("doctorSelect");
+    const timeSlotSelect = document.getElementById("timeSlotSelect");
+    const availabilityStatus = document.getElementById("availabilityStatus");
+    const bookButton = document.getElementById("bookButton");
+
+
+    // --- 2. Date Restriction Logic (Prevents past dates) ---
+
+    function setMinDate() {
+        const today = new Date();
+        const year = today.getFullYear();
+        // Month is 0-indexed, so add 1. padStart ensures two digits (e.g., '01').
+        const month = String(today.getMonth() + 1).padStart(2, '0'); 
+        const day = String(today.getDate()).padStart(2, '0');
+        
+        // Format required for HTML input type="date" min attribute (YYYY-MM-DD)
+        const minDate = `${year}-${month}-${day}`;
+        dateInput.min = minDate;
+    }
+
+    // Call the function immediately on load
+    setMinDate();
+
+
+    // --- 3. Department -> Doctor Loading Logic ---
+    departmentSelect.addEventListener("change", function () {
+        const deptId = this.value;
+
+        // Reset doctor and booking status on department change
+        doctorSelect.innerHTML = "<option value=''>Loading Doctors...</option>";
+        timeSlotSelect.value = "";
+        availabilityStatus.style.display = 'none';
+        bookButton.disabled = true;
+
+        if (!deptId) {
+            doctorSelect.innerHTML = "<option value=''>-- Select Department First --</option>";
+            return;
+        }
+
+        // Fetch doctors based on department ID
+        // NOTE: This assumes you have a Flask route like '/get-doctors/1' that returns JSON
+        fetch(`/get-doctors/${deptId}`) 
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                doctorSelect.innerHTML = "<option value=''>-- Select Doctor --</option>";
+
+                if (data.length === 0) {
+                    doctorSelect.innerHTML += "<option value='' disabled>No Doctors Available in this Dept.</option>";
+                    return;
+                }
+
+                data.forEach(doc => {
+                    // Adjust doc.name and doc.specialization based on your actual data structure
+                    doctorSelect.innerHTML +=
+                        `<option value="${doc.doctor_id}">
+                            Dr. ${doc.name} (${doc.specialization})
+                        </option>`;
+                });
+            })
+            .catch(error => {
+                console.error("Fetch error:", error);
+                doctorSelect.innerHTML = "<option value='' disabled>Error loading doctors.</option>";
+            });
+    });
+
+
+    // --- 4. Availability Check Logic (5 Appointments per slot per doctor) ---
+
+    function checkAvailability() {
+        const doctorId = doctorSelect.value;
+        const date = dateInput.value;
+        const time = timeSlotSelect.value;
+        
+        // Hide previous status and disable button while checking
+        availabilityStatus.style.display = 'none';
+        bookButton.disabled = true;
+
+        // Check if all necessary fields are selected
+        if (!doctorId || !date || !time) {
+            availabilityStatus.textContent = '';
+            // Only allow booking if fields are valid and not empty
+            if(doctorId && date && time) {
+                 bookButton.disabled = false;
+            }
+            return; 
+        }
+
+        // Display a checking message
+        availabilityStatus.textContent = 'Checking availability...';
+        availabilityStatus.className = 'p-3 rounded-lg text-sm font-medium bg-yellow-100 text-yellow-800';
+        availabilityStatus.style.display = 'block';
+
+        // Fetch availability from the server (YOU MUST IMPLEMENT THIS '/check-availability' ROUTE IN FLASK)
+        fetch('/check-availability', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                doctor_id: doctorId,
+                date: date,
+                time: time
+            }),
+        })
+        .then(response => {
+             if (!response.ok) {
+                throw new Error(`Server returned status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.is_available) {
+                // Slot is available
+                // data.remaining_slots should be calculated by server (5 - booked_count)
+                availabilityStatus.textContent = `✅ Slot Available! ${data.remaining_slots} appointments left.`;
+                availabilityStatus.className = 'p-3 rounded-lg text-sm font-medium bg-green-600 text-white';
+                bookButton.disabled = false; // Enable booking
+            } else {
+                // Slot is full
+                availabilityStatus.textContent = '❌ This time slot is fully booked for this doctor.';
+                availabilityStatus.className = 'p-3 rounded-lg text-sm font-medium bg-red-600 text-white';
+                bookButton.disabled = true; // Keep button disabled
+            }
+        })
+        .catch(error => {
+            console.error('Error checking availability:', error);
+            availabilityStatus.textContent = '⚠️ Error checking availability. Please check server status.';
+            availabilityStatus.className = 'p-3 rounded-lg text-sm font-medium bg-red-600 text-white';
+            bookButton.disabled = true;
+        });
+    }
+
+    // Attach the checkAvailability function to changes in Doctor, Date, and Time
+    doctorSelect.addEventListener('change', checkAvailability);
+    dateInput.addEventListener('change', checkAvailability);
+    timeSlotSelect.addEventListener('change', checkAvailability);
+    // In new_appointment.html script block:
+
+// Attach this function to change events on doctorSelect and appointmentDate
+doctorSelect.addEventListener('change', loadTimeSlots);
+dateInput.addEventListener('change', loadTimeSlots);
+
+function loadTimeSlots() {
+    const doctorId = doctorSelect.value;
+    const date = dateInput.value;
+    const timeSlotSelect = document.getElementById('timeSlotSelect');
+    
+    // Reset and disable time slot select
+    timeSlotSelect.innerHTML = "<option value=''>-- Select Time --</option>";
+    timeSlotSelect.disabled = true;
+
+    if (!doctorId || !date) return;
+
+    // Show checking status (optional UI update here)
+    // ...
+
+    fetch('/get-available-slots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doctor_id: doctorId, date: date }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        timeSlotSelect.disabled = false;
+        
+        if (data.slots && data.slots.length > 0) {
+            data.slots.forEach(slot => {
+                const option = document.createElement('option');
+                option.value = slot.time_value;
+                option.textContent = `${slot.time_label} (${slot.remaining} slots left)`;
+                timeSlotSelect.appendChild(option);
+            });
+        } else {
+            timeSlotSelect.innerHTML = "<option value=''>-- No Slots Available --</option>";
+        }
+    })
+    .catch(error => {
+        console.error('Error loading time slots:', error);
+        timeSlotSelect.innerHTML = "<option value=''>-- Error Loading Slots --</option>";
+    });
+}
+</script>
+</html>
