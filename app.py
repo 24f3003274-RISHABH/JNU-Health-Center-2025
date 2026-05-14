@@ -1,9 +1,12 @@
 from flask import Flask
 import os
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables (optional - for local development)
+try:
+  from dotenv import load_dotenv
+  load_dotenv()
+except ImportError:
+  pass
 
 # for defining the database db in the app.py
 from application.database import db #step3
@@ -16,9 +19,9 @@ def create_app():
   app=Flask(__name__)
   
   # Use environment variables with fallback defaults
-  app.debug = os.getenv('FLASK_ENV') != 'production'
+  app.debug = os.getenv('FLASK_ENV', 'development') != 'production'
   app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', "sqlite:///hms.sqlite3") #step3
-  app.secret_key = os.getenv('SECRET_KEY', 'any-random-secret-string')
+  app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
   
   db.init_app(app) #step3
   app.app_context().push()
