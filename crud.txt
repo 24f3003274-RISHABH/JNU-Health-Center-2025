@@ -67,3 +67,20 @@ from werkzeug.security import generate_password_hash
 
 hashed_password = generate_password_hash(password)
 user = User(name=name, email=email, password=hashed_password, role='patient')
+
+
+
+
+
+
+
+
+
+
+git remote remove origin
+git remote add origin https://github.com/24f3003274-RISHABH/Rishabh-s-Portfolio.git
+git branch -M main
+git add .
+git commit -m "Portfolio project upload"
+git push -u origin main --force
+
