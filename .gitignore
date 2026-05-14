@@ -5,7 +5,7 @@ __pycache__/
 .imp
 # C extensions
 *.so
-
+imp
 # Distribution / packaging
 build/
 dist/
