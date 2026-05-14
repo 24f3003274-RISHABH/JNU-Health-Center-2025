@@ -153,6 +153,7 @@
 
                 <div class="pt-4">
                     <button 
+                    id="bookButton"
                     class="btn-primary bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md 
                           transform transition duration-300 ease-in-out 
                           hover:bg-red-700 hover:scale-105 hover:shadow-lg">
@@ -202,42 +203,51 @@
     // --- 3. Department -> Doctor Loading Logic ---
     departmentSelect.addEventListener("change", function () {
         const deptId = this.value;
+        console.log("Department changed to:", deptId);
 
         // Reset doctor and booking status on department change
         doctorSelect.innerHTML = "<option value=''>Loading Doctors...</option>";
         timeSlotSelect.value = "";
         availabilityStatus.style.display = 'none';
-        bookButton.disabled = true;
+        if (bookButton) bookButton.disabled = true;
 
         if (!deptId) {
             doctorSelect.innerHTML = "<option value=''>-- Select Department First --</option>";
+            console.log("No department selected");
             return;
         }
 
         // Fetch doctors based on department ID
-        // NOTE: This assumes you have a Flask route like '/get-doctors/1' that returns JSON
-        fetch(`/get-doctors/${deptId}`) 
+        const apiUrl = `/get-doctors/${deptId}`;
+        console.log("Fetching doctors from:", apiUrl);
+        
+        fetch(apiUrl) 
             .then(response => {
+                console.log("Response status:", response.status);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 return response.json();
             })
             .then(data => {
+                console.log("Doctors received:", data);
                 doctorSelect.innerHTML = "<option value=''>-- Select Doctor --</option>";
 
                 if (data.length === 0) {
                     doctorSelect.innerHTML += "<option value='' disabled>No Doctors Available in this Dept.</option>";
+                    console.log("No doctors found for department");
                     return;
                 }
 
                 data.forEach(doc => {
+                    console.log("Adding doctor:", doc);
                     // Adjust doc.name and doc.specialization based on your actual data structure
                     doctorSelect.innerHTML +=
                         `<option value="${doc.doctor_id}">
                             Dr. ${doc.name} (${doc.specialization})
                         </option>`;
                 });
+                console.log("Doctors loaded successfully");
             })
             .catch(error => {
                 console.error("Fetch error:", error);

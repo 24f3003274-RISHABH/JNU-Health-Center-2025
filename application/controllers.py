@@ -802,12 +802,42 @@ def get_available_slots():
 @app.route("/get-doctors/<int:dept_id>", methods=["GET"])
 def get_doctors(dept_id):
     try:
+        # Query all doctors for the given department
         doctors = Doctor.query.filter_by(dept_id=dept_id).all()
+        
+        # Log for debugging
+        print(f"Department ID: {dept_id}, Doctors found: {len(doctors)}")
+        
+        # Convert to dictionary format
         doctor_data = [doc.to_dict() for doc in doctors]
-        return jsonify(doctor_data)
+        
+        return jsonify(doctor_data), 200
     except Exception as e:
-        print("Error:", e)
-        return jsonify({"error": "Failed to load doctors"}), 500
+        print(f"Error in get_doctors: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Failed to load doctors", "details": str(e)}), 500
+
+
+# Debug endpoint to check departments and doctors
+@app.route("/debug/doctors-info", methods=["GET"])
+def debug_doctors_info():
+    try:
+        departments = Department.query.all()
+        dept_info = []
+        
+        for dept in departments:
+            doctors = Doctor.query.filter_by(dept_id=dept.dept_id).all()
+            dept_info.append({
+                "dept_id": dept.dept_id,
+                "dept_name": dept.name,
+                "doctor_count": len(doctors),
+                "doctors": [{"id": doc.doctor_id, "name": doc.name, "spec": doc.specialization} for doc in doctors]
+            })
+        
+        return jsonify({"departments": dept_info}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/full-report/<int:history_id>")
