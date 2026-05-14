@@ -25,7 +25,7 @@ def create_app():
   # Initialize database
   db.init_app(app)
   
-  # Create tables
+  # Create tables in app context
   with app.app_context():
     try:
       db.create_all()
@@ -48,26 +48,16 @@ def create_app():
   
   return app
 
-try:
-  app = create_app()
-  
-  # Import controllers after app is created
-  with app.app_context():
-    from application.controllers import *  # step2
-    
-except Exception as e:
-  print(f"Error during app initialization: {e}", file=sys.stderr)
-  traceback.print_exc()
-  # Create a minimal app if controllers fail to import
-  app = create_app()
-  
-  @app.route('/')
-  def error_page():
-    return jsonify({
-      "error": "Application failed to initialize",
-      "details": str(e)
-    }), 500
+app = create_app()
 
+# Push app context and import controllers
+app.app_context().push()
+
+try:
+  from application.controllers import *  # step2
+except Exception as e:
+  print(f"Error importing controllers: {e}", file=sys.stderr)
+  traceback.print_exc()
 
 if __name__=='__main__':
   app.run()
